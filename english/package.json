@@ -1,0 +1,15 @@
+{
+  "name": "english-word-review",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "小孩英文單字考前複習頁（投電視用）。單一靜態 HTML，零建置。",
+  "scripts": {
+    "test": "node test/test.mjs",
+    "gen-images": "node tools/gen-images.mjs"
+  },
+  "devDependencies": {
+    "@google/genai": "^1.0.0",
+    "jsdom": "^29.1.1"
+  }
+}

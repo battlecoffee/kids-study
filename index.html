@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小朋友學習</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#2B2B33;--paper:#FBFAF6;--en:#2E8BD6;--math:#E0941A;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    font-family:"Nunito","PingFang TC","Microsoft JhengHei",sans-serif;
+    background:var(--paper);color:var(--ink);
+    min-height:100%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:clamp(24px,4vw,56px);
+    padding:6vw;text-align:center;-webkit-font-smoothing:antialiased;
+  }
+  .title{font-family:"Fredoka",sans-serif;font-weight:700;font-size:clamp(34px,6vw,84px);line-height:1.05;}
+  .title small{display:block;font-family:"Nunito";font-weight:700;font-size:.32em;color:#8a8a93;letter-spacing:1px;margin-top:.5em;}
+  .subjects{display:flex;gap:clamp(20px,3vw,48px);flex-wrap:wrap;justify-content:center;}
+  .subject{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.3em;
+    text-decoration:none;color:var(--ink);
+    background:#fff;border-radius:32px;border:5px solid #EFEDE5;
+    box-shadow:0 12px 36px rgba(40,40,60,.10);
+    padding:clamp(28px,4vw,64px) clamp(36px,5vw,90px);min-width:min(70vw,300px);
+    transition:transform .14s ease,box-shadow .14s ease,border-color .15s ease;
+  }
+  .subject:hover{transform:translateY(-6px);box-shadow:0 20px 48px rgba(40,40,60,.16);}
+  .subject .ico{font-size:clamp(64px,9vw,130px);line-height:1;}
+  .subject .name{font-family:"Fredoka",sans-serif;font-weight:700;font-size:clamp(28px,3.6vw,56px);}
+  .subject .en{font-weight:800;font-size:clamp(14px,1.5vw,22px);color:#9a9aa2;letter-spacing:1px;}
+  .subject.english{border-color:#E8F3FC;} .subject.english .name{color:var(--en);}
+  .subject.math{border-color:#FFF4E2;}    .subject.math .name{color:var(--math);}
+</style>
+</head>
+<body>
+  <div class="title">小朋友學習
+    <small>SELECT A SUBJECT</small>
+  </div>
+  <div class="subjects">
+    <a class="subject english" href="english/index.html">
+      <span class="ico">🔤</span>
+      <span class="name">英文</span>
+      <span class="en">ENGLISH</span>
+    </a>
+    <a class="subject math" href="math/index.html">
+      <span class="ico">🔢</span>
+      <span class="name">數學</span>
+      <span class="en">MATH</span>
+    </a>
+  </div>
+</body>
+</html>
