@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>📅 日期小高手</title>
+<style>
+  :root{
+    --bg:#fbf7ef; --card:#ffffff; --ink:#2b2b2b; --muted:#8a8a8a;
+    --accent:#2f8f6f; --accent-d:#256e55; --accent-soft:#e7f3ee;
+    --warn:#e8804a; --warn-soft:#fdeee4;
+    --sun:#d7503e; --sat:#3f6fd1;
+    --good:#2f8f6f; --bad:#d7503e; --line:#e7e3da; --hi:#ffd66b;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{margin:0; font-family:-apple-system,"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;
+    background:var(--bg); color:var(--ink); line-height:2.0; padding:14px; max-width:600px; margin:0 auto;}
+  .zt{display:inline-flex; align-items:center; line-height:1; vertical-align:-0.05em;}
+  .zt>.b{display:inline-flex; flex-direction:column; justify-content:center; align-items:center;
+    font-size:.42em; line-height:1.04; margin-left:.06em; min-width:.55em; font-weight:400;}
+  .zt>.b i{font-style:normal; display:flex; align-items:baseline; justify-content:center;}
+  .zt>.b i u{text-decoration:none; font-size:.82em; margin-left:.03em;}
+  header{text-align:center; margin:6px 0 12px; line-height:1.5; position:relative;}
+  header h1{font-size:26px; margin:0; letter-spacing:1px;}
+  header p{margin:6px 0 0; color:var(--muted); font-size:14px;}
+  .sound{position:absolute; right:0; top:2px; border:1.5px solid var(--line); background:var(--card);
+    width:42px; height:42px; border-radius:50%; font-size:20px; cursor:pointer; line-height:1;}
+  .sound.off{opacity:.55;}
+  .back{position:absolute; left:0; top:2px; display:inline-flex; align-items:center;
+    height:42px; padding:0 14px; border:1.5px solid var(--line); background:var(--card);
+    border-radius:21px; font-size:15px; font-weight:700; color:var(--ink); text-decoration:none; line-height:1;}
+  .stats{display:flex; gap:8px; justify-content:center; margin:12px 0;}
+  .stat{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:8px 10px; text-align:center; flex:1; line-height:1.3;}
+  .stat b{display:block; font-size:22px; color:var(--accent-d);}
+  .stat span{font-size:12px; color:var(--muted);}
+  .modes{display:flex; gap:6px; flex-wrap:wrap; justify-content:center; margin:6px 0 14px;}
+  .chip{border:1.5px solid var(--line); background:var(--card); color:var(--ink); padding:7px 12px; border-radius:999px; font-size:14px; cursor:pointer; transition:.15s; line-height:1.5;}
+  .chip.on{background:var(--accent); border-color:var(--accent); color:#fff; font-weight:700;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:20px; padding:16px; margin-bottom:14px; box-shadow:0 2px 10px rgba(0,0,0,.03);}
+  .calhead{display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:10px; line-height:1.4;}
+  .calhead .m{font-size:22px; font-weight:800; color:var(--warn);}
+  .calhead .tag{font-size:12px; color:var(--muted); background:var(--accent-soft); padding:4px 9px; border-radius:999px;}
+  .cal{display:grid; grid-template-columns:repeat(7,1fr); gap:4px;}
+  .cal .h{text-align:center; font-weight:800; font-size:13px; padding:6px 0; border-radius:8px; background:#f3efe6; color:var(--ink); line-height:1.2;}
+  .cal .h.s{color:var(--sun);} .cal .h.x{color:var(--sat);}
+  .cal .d{text-align:center; padding:8px 0; border-radius:10px; font-size:15px; background:#faf8f3; border:1px solid #f0ece3; line-height:1;}
+  .cal .d.empty{background:transparent; border:none;}
+  .cal .d.hi{background:var(--hi); border:2px solid var(--warn); font-weight:800; box-shadow:0 0 0 3px rgba(255,214,107,.35); animation:pop .3s;}
+  @keyframes pop{0%{transform:scale(.85)}100%{transform:scale(1)}}
+  .q{font-size:19px; font-weight:700; margin:2px 0 14px; line-height:2.1;}
+  .sub{font-size:14px; color:var(--muted); margin:14px 0 8px; font-weight:700; line-height:1.6;}
+  .opts{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .opt{border:1.5px solid var(--line); background:var(--card); border-radius:14px; padding:13px 8px; font-size:17px; text-align:center; cursor:pointer; transition:.12s; font-weight:600; line-height:1.6;}
+  .opt.sel{border-color:var(--accent); background:var(--accent-soft);}
+  .wopts{display:grid; grid-template-columns:repeat(7,1fr); gap:5px;}
+  .wopt{border:1.5px solid var(--line); background:var(--card); border-radius:12px; padding:10px 0; font-size:17px; text-align:center; cursor:pointer; font-weight:700; transition:.12s; line-height:1.3;}
+  .wopt.s{color:var(--sun);} .wopt.x{color:var(--sat);}
+  .wopt.sel{border-color:var(--accent); background:var(--accent-soft);}
+  .opt.ok,.wopt.ok{background:#e3f4ec!important; border-color:var(--good)!important; color:var(--good)!important;}
+  .opt.no,.wopt.no{background:#fbe7e3!important; border-color:var(--bad)!important; color:var(--bad)!important;}
+  .row{display:flex; gap:8px; margin-top:14px;}
+  .btn{flex:1; border:none; border-radius:14px; padding:14px; font-size:17px; font-weight:800; cursor:pointer; transition:.15s; font-family:inherit; line-height:1.5;}
+  .btn.primary{background:var(--accent); color:#fff;} .btn.primary:active{background:var(--accent-d);}
+  .btn.ghost{background:#f1ede4; color:var(--ink);}
+  .btn:disabled{opacity:.45; cursor:default;}
+  .hintbox{background:var(--warn-soft); border:1px dashed var(--warn); border-radius:12px; padding:10px 12px; font-size:14px; color:#9a5126; margin-top:10px; display:none; line-height:2.0;}
+  .fb{border-radius:14px; padding:14px; margin-top:12px; display:none; font-size:15px; line-height:2.0;}
+  .fb.show{display:block; animation:pop .25s;}
+  .fb.good{background:#e3f4ec; border:1px solid var(--good);}
+  .fb.bad{background:#fbe7e3; border:1px solid var(--bad);}
+  .fb .big{font-size:18px; font-weight:800; margin-bottom:6px;}
+  .fb.good .big{color:var(--good);} .fb.bad .big{color:var(--bad);}
+  .fb .why{color:#444;}
+  footer{text-align:center; color:var(--muted); font-size:12px; margin:10px 0 4px; line-height:1.9;}
+</style>
+</head>
+<body>
+<header>
+  <a class="back" href="index.html">⬅️ 數學</a>
+  <h1 class="zt-on" data-raw="📅 日期小高手"></h1>
+  <p class="zt-on" data-raw="看月曆，想想看「前一天」和「隔天」！"></p>
+  <button id="soundBtn" class="sound" title="聲音開關">🔊</button>
+</header>
+
+<div class="stats">
+  <div class="stat"><b id="sCorrect">0</b><span class="zt-on" data-raw="⭐ 答對"></span></div>
+  <div class="stat"><b id="sStreak">0</b><span class="zt-on" data-raw="🔥 連續答對"></span></div>
+  <div class="stat"><b id="sTotal">0</b><span class="zt-on" data-raw="📝 已作答"></span></div>
+</div>
+
+<div class="modes" id="modes">
+  <div class="chip on" data-m="all"><span class="zt-on" data-raw="全部"></span></div>
+  <div class="chip" data-m="prev"><span class="zt-on" data-raw="前一天"></span></div>
+  <div class="chip" data-m="next"><span class="zt-on" data-raw="隔天"></span></div>
+  <div class="chip" data-m="dow"><span class="zt-on" data-raw="找星期"></span></div>
+</div>
+
+<div class="card">
+  <div class="calhead"><span class="m" id="calMonth"></span><span class="tag zt-on" data-raw="每一題月份和月曆都會換，要重新看喔"></span></div>
+  <div class="cal" id="cal"></div>
+</div>
+
+<div class="card">
+  <div class="q" id="qtext">　</div>
+  <div id="dateBlock">
+    <div class="sub" id="dateLabel"></div>
+    <div class="opts" id="dateOpts"></div>
+  </div>
+  <div id="dowBlock">
+    <div class="sub" id="dowLabel"></div>
+    <div class="wopts" id="dowOpts"></div>
+  </div>
+
+  <div class="hintbox" id="hint"></div>
+  <div class="fb" id="fb"><div class="big" id="fbBig"></div><div class="why" id="fbWhy"></div></div>
+
+  <div class="row">
+    <button class="btn ghost zt-on" data-raw="💡 提示" id="hintBtn"></button>
+    <button class="btn primary zt-on" data-raw="看答案" id="checkBtn"></button>
+  </div>
+  <div class="row" id="nextRow" style="display:none">
+    <button class="btn primary zt-on" data-raw="下一題 →" id="nextBtn"></button>
+  </div>
+</div>
+
+<footer class="zt-on" data-raw="每題月份和月曆都會換，要重新看　·　右上角🔊可開關語音　·　關掉重開分數會重來"></footer>
+
+<script>
+const ZH={"一":"ㄧ","三":"ㄙㄢ","上":"ㄕㄤˋ","下":"ㄒㄧㄚˋ","不":"ㄅㄨˋ","了":"ㄌㄜ˙","二":"ㄦˋ","互":"ㄏㄨˋ","五":"ㄨˇ","份":"ㄈㄣˋ","作":"ㄗㄨㄛˋ","你":"ㄋㄧˇ","來":"ㄌㄞˊ","個":"ㄍㄜˋ","先":"ㄒㄧㄢ","全":"ㄑㄩㄢˊ","六":"ㄌㄧㄡˋ","再":"ㄗㄞˋ","分":"ㄈㄣ","到":"ㄉㄠˋ","前":"ㄑㄧㄢˊ","動":"ㄉㄨㄥˋ","可":"ㄎㄜˇ","右":"ㄧㄡˋ","同":"ㄊㄨㄥˊ","和":"ㄏㄜˊ","哪":"ㄋㄚˇ","問":"ㄨㄣˋ","喔":"ㄛ","四":"ㄙˋ","圈":"ㄑㄩㄢ","在":"ㄗㄞˋ","多":"ㄉㄨㄛ","天":"ㄊㄧㄢ","太":"ㄊㄞˋ","好":"ㄏㄠˇ","它":"ㄊㄚ","對":"ㄉㄨㄟˋ","小":"ㄒㄧㄠˇ","少":"ㄕㄠˇ","就":"ㄐㄧㄡˋ","已":"ㄧˇ","幾":"ㄐㄧˇ","強":"ㄑㄧㄤˊ","往":"ㄨㄤˇ","後":"ㄏㄡˋ","從":"ㄘㄨㄥˊ","想":"ㄒㄧㄤˇ","手":"ㄕㄡˇ","找":"ㄓㄠˇ","掉":"ㄉㄧㄠˋ","排":"ㄆㄞˊ","提":"ㄊㄧˊ","換":"ㄏㄨㄢˋ","數":"ㄕㄨˋ","新":"ㄒㄧㄣ","日":"ㄖˋ","星":"ㄒㄧㄥ","是":"ㄕˋ","曆":"ㄌㄧˋ","最":"ㄗㄨㄟˋ","會":"ㄏㄨㄟˋ","月":"ㄩㄝˋ","期":"ㄑㄧ","格":"ㄍㄜˊ","案":"ㄢˋ","棒":"ㄅㄤˋ","次":"ㄘˋ","每":"ㄇㄟˇ","沒":"ㄇㄟˊ","測":"ㄘㄜˋ","界":"ㄐㄧㄝˋ","的":"ㄉㄜ˙","看":"ㄎㄢˋ","示":"ㄕˋ","答":"ㄉㄚˊ","續":"ㄒㄩˋ","聲":"ㄕㄥ","號":"ㄏㄠˋ","裡":"ㄌㄧˇ","要":"ㄧㄠˋ","角":"ㄐㄧㄠˇ","語":"ㄩˇ","起":"ㄑㄧˇ","退":"ㄊㄨㄟˋ","這":"ㄓㄜˋ","連":"ㄌㄧㄢˊ","進":"ㄐㄧㄣˋ","選":"ㄒㄩㄢˇ","還":"ㄏㄞˊ","邊":"ㄅㄧㄢ","那":"ㄋㄚˋ","部":"ㄅㄨˋ","都":"ㄉㄡ","重":"ㄓㄨㄥˋ","開":"ㄎㄞ","關":"ㄍㄨㄢ","隔":"ㄍㄜˊ","面":"ㄇㄧㄢˋ","音":"ㄧㄣ","題":"ㄊㄧˊ","驗":"ㄧㄢˋ","高":"ㄍㄠ"};
+const TONES=new Set(['ˊ','ˇ','ˋ','˙']);
+function zspans(z){
+  const base=[...z].filter(c=>!TONES.has(c));
+  const tone=[...z].filter(c=>TONES.has(c)).join('');
+  let h=''; if(tone==='˙') h+='<i>˙</i>';
+  base.forEach((s,i)=>{ h+=(i===base.length-1&&tone&&tone!=='˙')?`<i>${s}<u>${tone}</u></i>`:`<i>${s}</i>`; });
+  return h;
+}
+function esc(c){return c==='<'?'&lt;':c==='>'?'&gt;':c==='&'?'&amp;':c;}
+function A(text){ let o=''; for(const ch of text){ o += ZH[ch]?`<span class="zt"><span class="c">${ch}</span><span class="b">${zspans(ZH[ch])}</span></span>`:esc(ch);} return o; }
+function B(text){ return '<b>'+A(text)+'</b>'; }
+
+const WD=['日','一','二','三','四','五','六'];
+const DIM=[31,28,31,30,31,30,31,31,30,31,30,31];
+const dim=m=>DIM[m-1];
+const pm=m=>m===1?12:m-1;
+const nm=m=>m===12?1:m+1;
+const rint=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rint(0,i);[a[i],a[j]]=[a[j],a[i]];}return a;};
+
+let M=11, first=0, mode='all', cur=null, selDate=null, selDow=null, answered=false, soundOn=true;
+let stat={correct:0,streak:0,total:0};
+
+function compute(type,d){
+  if(type==='prev'){
+    if(d===1){ const q=pm(M); return {label:`${q}月${dim(q)}日`, dow:(first-1+7)%7}; }
+    return {label:`${M}月${d-1}日`, dow:(first+d-2)%7};
+  }
+  if(type==='next'){
+    if(d===dim(M)){ const q=nm(M); return {label:`${q}月1日`, dow:(first+dim(M))%7}; }
+    return {label:`${M}月${d+1}日`, dow:(first+d)%7};
+  }
+  return {label:`${M}月${d}日`, dow:(first+d-1)%7}; // dow
+}
+function dateOptions(type,d,correct){
+  const cand=new Set([correct]);
+  const add=day=>{ if(day>=1&&day<=dim(M)) cand.add(`${M}月${day}日`); };
+  if(type==='prev'){ add(d-1); add(d); add(d+1); add(d-2); }
+  else { add(d+1); add(d); add(d+2); add(d-1); }
+  let arr=shuffle([...cand]).slice(0,4);
+  if(!arr.includes(correct)) arr[0]=correct;
+  return shuffle(arr);
+}
+function pickType(){
+  if(mode!=='all') return mode;
+  const r=Math.random();
+  return r<0.34?'prev':r<0.68?'next':'dow';
+}
+
+function renderCal(highlight){
+  document.getElementById('calMonth').innerHTML=A(`${M}月`);
+  const cal=document.getElementById('cal'); cal.innerHTML='';
+  WD.forEach((w,i)=>{const h=document.createElement('div'); h.className='h'+(i===0?' s':'')+(i===6?' x':''); h.innerHTML=A(w); cal.appendChild(h);});
+  for(let i=0;i<first;i++){const e=document.createElement('div');e.className='d empty';cal.appendChild(e);}
+  for(let day=1;day<=dim(M);day++){const c=document.createElement('div');c.className='d'+(day===highlight?' hi':'');c.textContent=day;cal.appendChild(c);}
+}
+
+function newQ(){
+  answered=false; selDate=null; selDow=null;
+  M=rint(1,12); first=rint(0,6);
+  const type=pickType();
+  let d, isB=false;
+  if(type==='dow'){ d=rint(1,dim(M)); }
+  else if(type==='prev'){ isB=Math.random()<0.55; d=isB?1:rint(2,dim(M)); }
+  else { isB=Math.random()<0.55; d=isB?dim(M):rint(1,dim(M)-1); }
+  cur={type,d,isB,...compute(type,d)};
+  renderCal(d);
+
+  const usesDate=(type!=='dow') && !isB;   // 邊界題不問日期
+  const usesDow=true;
+
+  const qt=document.getElementById('qtext');
+  if(type==='prev') qt.innerHTML='🔍 '+A('月曆上圈起來的是 ')+B(`${M}月${d}日`)+A('，它的「')+B('前一天')+A(isB?'」是星期幾？':'」是哪一天？');
+  else if(type==='next') qt.innerHTML='🔍 '+A('月曆上圈起來的是 ')+B(`${M}月${d}日`)+A('，它的「')+B('隔天（後一天）')+A(isB?'」是星期幾？':'」是哪一天？');
+  else qt.innerHTML='🔍 '+A('月曆上圈起來的 ')+B(`${M}月${d}日`)+A(' 是星期幾？');
+
+  const dateBlock=document.getElementById('dateBlock');
+  const dowBlock=document.getElementById('dowBlock');
+  if(usesDate){
+    dateBlock.style.display='block';
+    document.getElementById('dateLabel').innerHTML=A('① 這是幾月幾日？');
+    const box=document.getElementById('dateOpts'); box.innerHTML='';
+    dateOptions(type,d,cur.label).forEach(v=>{
+      const o=document.createElement('div'); o.className='opt'; o.dataset.v=v; o.innerHTML=A(v);
+      o.onclick=()=>{ if(answered)return; selDate=v; [...box.children].forEach(x=>x.classList.remove('sel')); o.classList.add('sel'); };
+      box.appendChild(o);
+    });
+  } else dateBlock.style.display='none';
+
+  dowBlock.style.display='block';
+  document.getElementById('dowLabel').innerHTML = usesDate ? A('② 是星期幾？') : A('是星期幾？');
+  const wbox=document.getElementById('dowOpts'); wbox.innerHTML='';
+  WD.forEach((w,i)=>{
+    const o=document.createElement('div'); o.className='wopt'+(i===0?' s':'')+(i===6?' x':''); o.innerHTML=A(w);
+    o.onclick=()=>{ if(answered)return; selDow=i; [...wbox.children].forEach(x=>x.classList.remove('sel')); o.classList.add('sel'); };
+    wbox.appendChild(o);
+  });
+
+  document.getElementById('hint').style.display='none';
+  document.getElementById('fb').className='fb';
+  document.getElementById('checkBtn').disabled=false;
+  document.getElementById('checkBtn').parentElement.style.display='flex';
+  document.getElementById('nextRow').style.display='none';
+}
+
+function hintHTML(){
+  const {type,d,isB}=cur;
+  if(isB&&type==='prev') return A(`先看月曆上 ${M}月1日 是星期幾，「前一天」的星期就往前退一格。`);
+  if(isB&&type==='next') return A(`先看月曆上 ${M}月${dim(M)}日 是星期幾，「隔天」的星期就往後進一格。`);
+  if(type==='prev') return A('同一個月裡，前一天就是「號數少 1」，星期往前退一格。');
+  if(type==='next') return A('同一個月裡，隔天就是「號數多 1」，星期往後進一格。');
+  return A(`從月曆上 ${M}月${d}日 那一格往最上面看，它排在哪一個星期，就是星期幾。`);
+}
+function whyHTML(){
+  const {type,d,isB,dow}=cur;
+  if(isB&&type==='prev') return A(`月曆上 ${M}月1日 是星期${WD[first]}，前一天的星期往前退一格，就是星期 `)+B(WD[dow])+A('。');
+  if(isB&&type==='next') return A(`月曆上 ${M}月${dim(M)}日 是星期${WD[(first+dim(M)-1)%7]}，隔天的星期往後進一格，就是星期 `)+B(WD[dow])+A('。');
+  if(type==='prev') return A(`同一個月，${d}−1＝${d-1}，是 `)+B(`${M}月${d-1}日`)+A('；星期往前退一格＝星期 ')+B(WD[dow])+A('。');
+  if(type==='next') return A(`同一個月，${d}＋1＝${d+1}，是 `)+B(`${M}月${d+1}日`)+A('；星期往後進一格＝星期 ')+B(WD[dow])+A('。');
+  return A(`從月曆上找到 ${M}月${d}日，它就在星期 `)+B(WD[dow])+A(' 那一格。');
+}
+
+const PRAISE=['Good job!','Good job!','Great job!','Well done!','Nice work!','Awesome!','你好棒！','答對了，太棒了！'];
+function speak(){
+  if(!soundOn || !('speechSynthesis' in window)) return;
+  try{
+    const t=PRAISE[rint(0,PRAISE.length-1)];
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(t);
+    u.lang=/[\u4e00-\u9fff]/.test(t)?'zh-TW':'en-US';
+    u.rate=1.0; u.pitch=1.15; u.volume=1;
+    speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+function check(){
+  if(answered) return;
+  const usesDate=(cur.type!=='dow') && !cur.isB;
+  const usesDow=true;
+  if(usesDate && selDate===null){ flash('還沒選「幾月幾日」喔'); return; }
+  if(usesDow && selDow===null){ flash('還沒選「星期幾」喔'); return; }
+  answered=true;
+  const dateOK=!usesDate || selDate===cur.label;
+  const dowOK=selDow===cur.dow;
+  const allOK=dateOK&&dowOK;
+  if(usesDate){[...document.getElementById('dateOpts').children].forEach(o=>{ if(o.dataset.v===cur.label)o.classList.add('ok'); else if(o.dataset.v===selDate)o.classList.add('no'); });}
+  if(usesDow){[...document.getElementById('dowOpts').children].forEach((o,i)=>{ if(i===cur.dow)o.classList.add('ok'); else if(i===selDow)o.classList.add('no'); });}
+  stat.total++;
+  if(allOK){stat.correct++; stat.streak++; speak();} else stat.streak=0;
+  updateStats();
+  const fb=document.getElementById('fb');
+  fb.className='fb show '+(allOK?'good':'bad');
+  const head=allOK?(stat.streak>0&&stat.streak%5===0?'太強了！連續答對 '+stat.streak+' 題 🎉':'答對了！👍'):'再看一次月曆 💪';
+  document.getElementById('fbBig').innerHTML=A(head);
+  document.getElementById('fbWhy').innerHTML=whyHTML();
+  document.getElementById('checkBtn').parentElement.style.display='none';
+  document.getElementById('nextRow').style.display='flex';
+}
+let flashT=null;
+function flash(msg){
+  const fb=document.getElementById('fb'); fb.className='fb show bad';
+  document.getElementById('fbBig').innerHTML=A(msg); document.getElementById('fbWhy').innerHTML='';
+  clearTimeout(flashT); flashT=setTimeout(()=>{ if(!answered) fb.className='fb'; },1500);
+}
+function updateStats(){
+  document.getElementById('sCorrect').textContent=stat.correct;
+  document.getElementById('sStreak').textContent=stat.streak;
+  document.getElementById('sTotal').textContent=stat.total;
+}
+
+document.getElementById('checkBtn').onclick=check;
+document.getElementById('nextBtn').onclick=newQ;
+document.getElementById('hintBtn').onclick=()=>{ const h=document.getElementById('hint'); h.innerHTML=hintHTML(); h.style.display='block'; };
+document.getElementById('modes').onclick=e=>{ const c=e.target.closest('.chip'); if(!c)return; [...document.querySelectorAll('.chip')].forEach(x=>x.classList.remove('on')); c.classList.add('on'); mode=c.dataset.m; newQ(); };
+document.getElementById('soundBtn').onclick=function(){ soundOn=!soundOn; this.textContent=soundOn?'🔊':'🔇'; this.classList.toggle('off',!soundOn); if(soundOn) speak(); };
+
+document.addEventListener('keydown', e=>{
+  if(e.repeat) return;
+  if(e.code==='Space' || e.key===' '){ e.preventDefault(); if(!answered) check(); }
+  else if(e.code==='Enter' || e.key==='Enter'){ if(answered){ e.preventDefault(); newQ(); } }
+});
+
+document.querySelectorAll('.zt-on').forEach(el=>{ el.innerHTML=A(el.dataset.raw); });
+newQ();
+</script>
+</body>
+</html>

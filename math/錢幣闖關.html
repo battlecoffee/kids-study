@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>陀螺戰士 錢幣特訓 ⚡</title>
+<style>
+  :root {
+    --bg: #f3f6fb;
+    --card: #ffffff;
+    --ink: #2b3245;
+    --accent: #ff7a18;
+    --accent-soft: #ffe2cc;
+    --green: #2ecc71;
+    --blue: #2f6fed;
+    --red: #e8413a;
+    --pink: #ff6b8a;
+    --gold: #ffc62e;
+    --shadow: 0 6px 0 rgba(40,50,80,0.12);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", system-ui, sans-serif;
+    background:
+      radial-gradient(circle at 12% 8%, #e7eefc 0, transparent 40%),
+      radial-gradient(circle at 88% 4%, #fde6e0 0, transparent 38%),
+      var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 60px 16px 24px;
+    user-select: none;
+  }
+  .wrap { width: 100%; max-width: 560px; }
+
+  /* 固定頂列：回首頁 + 聲音 */
+  .fixedbar {
+    position: fixed; top: 0; left: 0; right: 0; height: 52px; z-index: 60;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 12px; background: rgba(243,246,251,0.92); backdrop-filter: blur(6px);
+    box-shadow: 0 2px 10px rgba(40,50,80,0.07);
+  }
+  .iconbtn {
+    font-size: 17px; font-weight: 800; background: #fff; border: none; border-radius: 14px;
+    padding: 9px 14px; box-shadow: 0 4px 0 #d5deef; cursor: pointer; color: var(--ink);
+    font-family: inherit; text-decoration: none; display: inline-block;
+  }
+  .iconbtn:active { transform: translateY(2px); box-shadow: 0 2px 0 #d5deef; }
+  .invisible { visibility: hidden; }
+
+  /* 注音：直書放在字的右邊，聲調拆出（台灣慣例，跨瀏覽器皆可）*/
+  .zy { display: inline-flex; align-items: center; vertical-align: middle; }
+  .zyw { display: flex; align-items: center; margin-left: 2px; font-size: 0.54em; color: #353c59;
+    font-weight: 900; line-height: 1; user-select: none; -webkit-text-stroke: 0.35px currentColor; }
+  .zycol { display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .zyb { writing-mode: vertical-lr; text-orientation: upright; -webkit-text-orientation: upright; line-height: 1.05; }
+  .zyn { line-height: 0.35; margin-bottom: 0; font-size: 1.5em; }
+  .zyt { align-self: center; line-height: 0.9; margin-left: 0.5px; font-size: 1.65em; }
+  .hero .zyw { color: #ffe2cf; }
+
+  /* 陀螺旋轉 */
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spin-slow { display: inline-block; animation: spin 4s linear infinite; }
+  .spin-fast { display: inline-block; animation: spin .6s linear infinite; vertical-align: middle; }
+  /* 商店陀螺：預設快轉，hover 停住，離開再轉 */
+  .top-spin { display: inline-block; }
+  .top-spin .bey-svg { animation: spin .6s linear infinite; }
+  .top-spin:hover .bey-svg { animation-play-state: paused; }
+  .bey-svg { display: block; }
+
+  /* 主選單 hero */
+  .hero {
+    background: linear-gradient(135deg, #243b8f 0%, #6a2bb0 50%, #c0392b 100%);
+    border-radius: 26px; padding: 14px 16px 18px; text-align: center; color: #fff;
+    box-shadow: var(--shadow); margin-bottom: 14px; position: relative; overflow: hidden;
+  }
+  .hero::before { content: "X"; position: absolute; right: -10px; bottom: -28px; font-size: 130px;
+    font-weight: 900; color: rgba(255,255,255,0.08); font-style: italic; }
+  .hero h1 { font-size: 27px; margin: 6px 0 0; line-height: 2; text-shadow: 0 2px 6px rgba(0,0,0,.25); }
+  .hero rt { color: #ffd9c2; }
+  .subtitle { text-align: center; color: #7b86a3; margin: 0 0 14px; font-size: 15px; line-height: 2.2; }
+
+  .btn {
+    border: none; border-radius: 18px; padding: 16px 22px; font-size: 20px; font-weight: 800;
+    font-family: inherit; cursor: pointer; box-shadow: var(--shadow); transition: transform .08s; color: #fff; line-height: 1.9;
+  }
+  .btn:active { transform: translateY(3px); box-shadow: 0 3px 0 rgba(40,50,80,0.12); }
+  .btn-green { background: var(--green); } .btn-blue { background: var(--blue); }
+  .btn-gray { background: #aab4cc; } .btn-ghost { background: #fff; color: var(--ink); box-shadow: 0 4px 0 #d5deef; }
+
+  .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .stage-card {
+    background: var(--card); border-radius: 22px; padding: 16px 12px; text-align: center;
+    cursor: pointer; box-shadow: var(--shadow); transition: transform .08s; border-top: 4px solid var(--blue);
+  }
+  .stage-card:nth-child(2){ border-top-color: var(--red); }
+  .stage-card:nth-child(3){ border-top-color: var(--gold); }
+  .stage-card:nth-child(4){ border-top-color: var(--green); }
+  .stage-card:active { transform: translateY(3px); }
+  .stage-card .emoji { font-size: 42px; }
+  .stage-card .name { font-size: 20px; font-weight: 800; margin-top: 4px; line-height: 1.9; }
+  .stage-card .desc { font-size: 13px; color: #9aa6c2; margin-top: 2px; line-height: 1.9; }
+  .stage-card .stars { font-size: 14px; margin-top: 6px; min-height: 18px; letter-spacing: 1px; }
+
+  .topbar { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .progress { flex: 1; height: 16px; background: #dde5f5; border-radius: 10px; overflow: hidden; }
+  .progress > div { height: 100%; background: linear-gradient(90deg,var(--gold),var(--accent)); width: 0; transition: width .3s; border-radius: 10px; }
+  .progress-label { font-size: 15px; font-weight: 800; color: #8b97b5; }
+
+  .card { background: var(--card); border-radius: 26px; padding: 22px 18px; box-shadow: var(--shadow); text-align: center; min-height: 60px; }
+  .qrow { display: flex; align-items: flex-start; justify-content: center; gap: 8px; }
+  .question { font-size: 23px; font-weight: 800; line-height: 2; margin-bottom: 6px; }
+  .question .hl { color: var(--accent); }
+
+  .money-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 14px 0; }
+  .coin { border-radius: 50%; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 800; color: #5a4a2a; box-shadow: inset 0 -3px 0 rgba(0,0,0,0.12), 0 3px 4px rgba(0,0,0,0.15); border: 2px solid rgba(255,255,255,0.5); }
+  .coin .v { line-height: 1; } .coin .u { font-size: 0.42em; opacity: 0.8; }
+  .c1 { background: linear-gradient(145deg,#e8a87c,#cd853f); } .c5 { background: linear-gradient(145deg,#e8e8ec,#b8b8c0); }
+  .c10 { background: linear-gradient(145deg,#f0d878,#d4af37); } .c50 { background: linear-gradient(145deg,#ffd86b,#e0a92e); }
+  .note { border-radius: 8px; display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 800; color: #fff; box-shadow: 0 3px 5px rgba(0,0,0,0.18); border: 2px solid rgba(255,255,255,0.4); }
+  .note .v { line-height: 1; } .note .u { font-size: 0.4em; opacity: 0.9; } .n100 { background: linear-gradient(145deg,#e2645f,#c0392b); }
+
+  .shop-item { display: flex; flex-direction: column; align-items: center; gap: 4px; margin: 6px 0 2px; }
+  .price-tag { background: var(--red); color: #fff; font-weight: 800; padding: 4px 14px; border-radius: 20px; font-size: 20px; box-shadow: 0 3px 0 #a5302a; }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 16px; }
+  .opt { background: #fff; border: 3px solid #dbe4f7; border-radius: 18px; padding: 16px; font-size: 26px; font-weight: 800;
+    cursor: pointer; color: var(--ink); box-shadow: 0 4px 0 #d5deef; transition: transform .08s; }
+  .opt:active { transform: translateY(3px); box-shadow: none; }
+
+  .stepper { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 16px 0; }
+  .stepper button { width: 64px; height: 64px; border-radius: 50%; border: none; font-size: 34px; font-weight: 800; cursor: pointer; color: #fff; box-shadow: var(--shadow); }
+  .stepper .minus { background: var(--pink); } .stepper .plus { background: var(--green); }
+  .stepper .val { font-size: 40px; font-weight: 900; min-width: 70px; }
+
+  .keypad { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 14px; }
+  .keypad button { padding: 14px; font-size: 26px; font-weight: 800; border: none; border-radius: 16px; background: #fff; box-shadow: 0 4px 0 #d5deef; cursor: pointer; color: var(--ink); }
+  .keypad button:active { transform: translateY(3px); box-shadow: none; }
+  .answer-box { font-size: 36px; font-weight: 900; min-height: 52px; margin: 8px 0; letter-spacing: 2px; color: var(--accent); }
+
+  .yn { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+
+  .feedback { margin-top: 14px; font-size: 22px; font-weight: 800; min-height: 32px; line-height: 1.9; }
+  .feedback.good { color: var(--green); } .feedback.try { color: var(--accent); }
+  .hint { font-size: 15px; color: #8b97b5; margin-top: 4px; min-height: 20px; line-height: 1.9; }
+
+  .action-row { display: flex; gap: 12px; margin-top: 14px; } .action-row .btn { flex: 1; }
+
+  .shake { animation: shake .4s; }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+  .pop { animation: pop .35s; } @keyframes pop { 0%{transform:scale(.7)} 60%{transform:scale(1.15)} 100%{transform:scale(1)} }
+
+  .result { text-align: center; }
+  .result .big { font-size: 56px; margin: 4px 0; }
+  .result .star-line { font-size: 40px; letter-spacing: 4px; margin: 8px 0; min-height: 48px; }
+  .result .msg { font-size: 22px; font-weight: 800; margin: 6px 0; line-height: 1.9; }
+  .result .sub { font-size: 16px; color: #8b97b5; margin-bottom: 16px; line-height: 1.9; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="fixedbar">
+  <a class="iconbtn invisible" id="backMath" href="index.html">⬅️ 數學</a>
+  <button class="iconbtn invisible" id="floatHome">🏠 回首頁</button>
+  <button class="iconbtn" id="floatSound">🔊</button>
+</div>
+
+<div class="wrap">
+
+  <!-- 主選單 -->
+  <div id="menu">
+    <div class="hero">
+      <div class="spin-slow" id="heroTop"></div>
+      <h1 id="title"></h1>
+    </div>
+    <p class="subtitle" id="subtitle"></p>
+    <div class="menu-grid">
+      <div class="stage-card" data-stage="recognize"><div class="emoji">🪙</div><div class="name" data-zh="認幣值"></div><div class="desc" data-zh="這是多少錢？"></div><div class="stars" id="star-recognize"></div></div>
+      <div class="stage-card" data-stage="exchange"><div class="emoji">🔄</div><div class="name" data-zh="換錢"></div><div class="desc" data-zh="可以換成幾個？"></div><div class="stars" id="star-exchange"></div></div>
+      <div class="stage-card" data-stage="count"><div class="emoji">🧮</div><div class="name" data-zh="數錢"></div><div class="desc" data-zh="一共有多少錢？"></div><div class="stars" id="star-count"></div></div>
+      <div class="stage-card" data-stage="enough"><div class="emoji">🛒</div><div class="name" data-zh="陀螺商店"></div><div class="desc" data-zh="錢夠買嗎？"></div><div class="stars" id="star-enough"></div></div>
+    </div>
+  </div>
+
+  <!-- 遊戲 -->
+  <div id="game" class="hidden">
+    <div class="topbar">
+      <div class="progress"><div id="progFill"></div></div>
+      <div class="progress-label" id="progLabel">1 / 5</div>
+    </div>
+    <div class="card" id="card"></div>
+  </div>
+
+  <!-- 結算 -->
+  <div id="result" class="hidden">
+    <div class="card result">
+      <div class="big" id="resEmoji">⚡</div>
+      <div id="resTop" style="margin:4px 0"></div>
+      <div class="star-line" id="resStars"></div>
+      <div class="msg" id="resMsg"></div>
+      <div class="sub" id="resSub"></div>
+      <div class="action-row">
+        <button class="btn btn-green" id="againBtn"></button>
+        <button class="btn btn-ghost" id="homeBtn"></button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ============================================================
+   陀螺戰士 錢幣特訓 — 單一 HTML（Beyblade 風格 / 注音 / 音效 / 語音）
+   數學內容＝真實錢幣；陀螺為原創 SVG（非官方版權圖）。
+   ============================================================ */
+
+const QUESTIONS_PER_ROUND = 5;
+const COIN_VALUES = [1, 5, 10, 50];
+const NOTE_VALUES = [100];
+const ALL_VALUES = [1, 5, 10, 50, 100];
+
+/* ---------- 注音對照表 ---------- */
+const ZHUYIN = {
+  '錢':'ㄑㄧㄢˊ','幣':'ㄅㄧˋ','闖':'ㄔㄨㄤˇ','關':'ㄍㄨㄢ','慢':'ㄇㄢˋ','來':'ㄌㄞˊ','你':'ㄋㄧˇ','可':'ㄎㄜˇ',
+  '以':'ㄧˇ','的':'˙ㄉㄜ','每':'ㄇㄟˇ','一':'ㄧ','都':'ㄉㄡ','能':'ㄋㄥˊ','直':'ㄓˊ','玩':'ㄨㄢˊ','認':'ㄖㄣˋ',
+  '值':'ㄓˊ','這':'ㄓㄜˋ','是':'ㄕˋ','多':'ㄉㄨㄛ','少':'ㄕㄠˇ','換':'ㄏㄨㄢˋ','成':'ㄔㄥˊ','幾':'ㄐㄧˇ','個':'ㄍㄜˋ',
+  '數':'ㄕㄨˇ','共':'ㄍㄨㄥˋ','有':'ㄧㄡˇ','夠':'ㄍㄡˋ','不':'ㄅㄨˋ','買':'ㄇㄞˇ','嗎':'˙ㄇㄚ','呢':'˙ㄋㄜ','元':'ㄩㄢˊ',
+  '看':'ㄎㄢˋ','對':'ㄉㄨㄟˋ','先':'ㄒㄧㄢ','跳':'ㄊㄧㄠˋ','過':'ㄍㄨㄛˋ','還':'ㄏㄞˊ','喔':'ㄛ','再':'ㄗㄞˋ','試':'ㄕˋ',
+  '太':'ㄊㄞˋ','拿':'ㄋㄚˊ','掉':'ㄉㄧㄠˋ','些':'ㄒㄧㄝ','按':'ㄢˋ','字':'ㄗˋ','鍵':'ㄐㄧㄢˋ','填':'ㄊㄧㄢˊ','答':'ㄉㄚˊ',
+  '案':'ㄢˋ','想':'ㄒㄧㄤˇ','身':'ㄕㄣ','上':'ㄕㄤˋ','所':'ㄙㄨㄛˇ','和':'ㄏㄢˋ','比':'ㄅㄧˇ','了':'˙ㄌㄜ','好':'ㄏㄠˇ',
+  '棒':'ㄅㄤˋ','厲':'ㄌㄧˋ','害':'ㄏㄞˋ','做':'ㄗㄨㄛˋ','到':'ㄉㄠˋ','完':'ㄨㄢˊ','全':'ㄑㄩㄢˊ','正':'ㄓㄥˋ','確':'ㄑㄩㄝˋ',
+  '題':'ㄊㄧˊ','其':'ㄑㄧˊ','中':'ㄓㄨㄥ','就':'ㄐㄧㄡˋ','繼':'ㄐㄧˋ','續':'ㄒㄩˋ','加':'ㄐㄧㄚ','油':'ㄧㄡˊ','努':'ㄋㄨˇ',
+  '力':'ㄌㄧˋ','最':'ㄗㄨㄟˋ','會':'ㄏㄨㄟˋ','更':'ㄍㄥˋ','熟':'ㄕㄡˊ','大':'ㄉㄚˋ','小':'ㄒㄧㄠˇ','次':'ㄘˋ','部':'ㄅㄨˋ',
+  '回':'ㄏㄨㄟˊ','家':'ㄐㄧㄚ','打':'ㄉㄚˇ','開':'ㄎㄞ','聲':'ㄕㄥ','音':'ㄧㄣ',
+  '陀':'ㄊㄨㄛˊ','螺':'ㄌㄨㄛˊ','戰':'ㄓㄢˋ','士':'ㄕˋ','特':'ㄊㄜˋ','訓':'ㄒㄩㄣˋ','色':'ㄙㄜˋ','發':'ㄈㄚ','射':'ㄕㄜˋ',
+  '器':'ㄑㄧˋ','競':'ㄐㄧㄥˋ','技':'ㄐㄧˋ','場':'ㄔㄤˇ','首':'ㄕㄡˇ','頁':'ㄧㄝˋ','出':'ㄔㄨ','擊':'ㄐㄧˊ','功':'ㄍㄨㄥ',
+  '超':'ㄔㄠ','強':'ㄑㄧㄤˊ','贏':'ㄧㄥˊ','紅':'ㄏㄨㄥˊ','藍':'ㄌㄢˊ','金':'ㄐㄧㄣ','綠':'ㄌㄩˋ','紫':'ㄗˇ','店':'ㄉㄧㄢˋ','商':'ㄕㄤ'
+};
+// 拆出聲調：輕聲(˙)放上方、二三四聲放右側，符合課本排版
+function zhParts(z) {
+  let neutral = '', tone = '', body = z;
+  if (body.charAt(0) === '˙') { neutral = '˙'; body = body.slice(1); }
+  const last = body.charAt(body.length - 1);
+  if (last === 'ˊ' || last === 'ˇ' || last === 'ˋ') { tone = last; body = body.slice(0, -1); }
+  return [neutral, body, tone];
+}
+function zh(text) {
+  let out = '';
+  for (const ch of text) {
+    if (ZHUYIN[ch]) {
+      const [neutral, body, tone] = zhParts(ZHUYIN[ch]);
+      const col = (neutral ? `<span class="zyn">${neutral}</span>` : '') + `<span class="zyb">${body}</span>`;
+      out += `<span class="zy"><span>${ch}</span><span class="zyw"><span class="zycol">${col}</span>${tone ? `<span class="zyt">${tone}</span>` : ''}</span></span>`;
+    } else out += ch;
+  }
+  return out;
+}
+
+/* ---------- 工具 ---------- */
+const $ = sel => document.querySelector(sel);
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function pick(arr) { return arr[randInt(0, arr.length - 1)]; }
+function shuffle(arr) { const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = randInt(0, i); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+
+/* ---------- 陀螺 / 商品 SVG（原創）---------- */
+function gearPath(cx, cy, rOut, rIn, teeth) {
+  let d = '', steps = teeth * 2;
+  for (let i = 0; i < steps; i++) {
+    const ang = Math.PI * 2 * i / steps - Math.PI / 2;
+    const r = i % 2 === 0 ? rOut : rIn;
+    d += (i === 0 ? 'M' : 'L') + (cx + r * Math.cos(ang)).toFixed(1) + ' ' + (cy + r * Math.sin(ang)).toFixed(1) + ' ';
+  }
+  return d + 'Z';
+}
+const blade = gearPath(50, 50, 47, 35, 8);
+function topSVG(p, size) {
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" class="bey-svg" style="margin:auto">
+    <path d="${blade}" fill="${p.blade}" stroke="#1f2433" stroke-width="2.5" stroke-linejoin="round"/>
+    <circle cx="50" cy="50" r="28" fill="${p.ring}" stroke="#1f2433" stroke-width="2"/>
+    <circle cx="50" cy="50" r="17" fill="${p.core}" stroke="#1f2433" stroke-width="1.5"/>
+    <path d="M42 42 L58 58 M58 42 L42 58" stroke="#fff" stroke-width="5" stroke-linecap="round"/>
+  </svg>`;
+}
+function launcherSVG(size) {
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" class="bey-svg" style="margin:auto">
+    <rect x="16" y="32" width="50" height="18" rx="5" fill="#2f6fed" stroke="#1f2433" stroke-width="2.5"/>
+    <rect x="28" y="48" width="15" height="34" rx="5" fill="#21509c" stroke="#1f2433" stroke-width="2.5"/>
+    <rect x="62" y="35" width="28" height="6" rx="3" fill="#ff7a18" stroke="#1f2433" stroke-width="1.5"/>
+    <circle cx="28" cy="41" r="8" fill="#ffc62e" stroke="#1f2433" stroke-width="2"/>
+    <path d="M24 41 L32 41 M28 37 L28 45" stroke="#1f2433" stroke-width="2"/>
+  </svg>`;
+}
+function stadiumSVG(size) {
+  return `<svg viewBox="0 0 100 100" width="${size}" height="${size}" class="bey-svg" style="margin:auto">
+    <ellipse cx="50" cy="56" rx="45" ry="30" fill="#2f6fed" stroke="#1f2433" stroke-width="2.5"/>
+    <ellipse cx="50" cy="50" rx="35" ry="22" fill="#cfe2ff" stroke="#1f2433" stroke-width="1.5"/>
+    <ellipse cx="50" cy="46" rx="16" ry="9" fill="#9cc4ff"/>
+    <path d="M30 46 L70 46 M50 36 L50 56" stroke="#7aa7ed" stroke-width="2"/>
+  </svg>`;
+}
+const TOPS = [
+  { name: '紅色陀螺', blade: '#e8413a', ring: '#b8302a', core: '#7d211d' },
+  { name: '藍色陀螺', blade: '#2f6fed', ring: '#2150b0', core: '#163675' },
+  { name: '金色陀螺', blade: '#ffc62e', ring: '#d9a213', core: '#9c7409' },
+  { name: '綠色陀螺', blade: '#2ecc71', ring: '#23a25a', core: '#16713d' },
+  { name: '紫色陀螺', blade: '#9b59b6', ring: '#7a3f93', core: '#542a66' }
+];
+const SHOP = [
+  ...TOPS.map(t => ({ name: t.name, isTop: true, svg: s => topSVG(t, s) })),
+  { name: '發射器', svg: s => launcherSVG(s) },
+  { name: '競技場', svg: s => stadiumSVG(s) }
+];
+
+/* ---------- 音效 + 語音 ---------- */
+let soundOn = true, audioCtx = null;
+function ac() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); if (audioCtx.state === 'suspended') audioCtx.resume(); return audioCtx; }
+function tone(freq, start, dur, type = 'sine', vol = 0.2) {
+  const ctx = ac(), o = ctx.createOscillator(), g = ctx.createGain();
+  o.type = type; o.frequency.value = freq; o.connect(g); g.connect(ctx.destination);
+  const t = ctx.currentTime + start;
+  g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.start(t); o.stop(t + dur + 0.02);
+}
+function play(kind) {
+  if (!soundOn) return;
+  try {
+    if (kind === 'correct') [523,659,784].forEach((f,i)=>tone(f, i*0.1, 0.25, 'triangle', 0.25));
+    else if (kind === 'wrong') { tone(330, 0, 0.18, 'sine', 0.15); tone(247, 0.12, 0.22, 'sine', 0.15); }
+    else if (kind === 'complete') [523,659,784,1047].forEach((f,i)=>tone(f, i*0.13, 0.3, 'triangle', 0.28));
+    else if (kind === 'tap') tone(660, 0, 0.06, 'square', 0.08);
+  } catch (e) {}
+}
+let ttsVoice = null;
+function loadVoice() { if (!('speechSynthesis' in window)) return; const vs = speechSynthesis.getVoices();
+  ttsVoice = vs.find(v => /zh[-_]TW/i.test(v.lang)) || vs.find(v => /zh/i.test(v.lang)) || null; }
+if ('speechSynthesis' in window) { loadVoice(); speechSynthesis.onvoiceschanged = loadVoice; }
+function speak(text) {
+  if (!soundOn || !('speechSynthesis' in window)) return;
+  const clean = text.replace(/[^一-鿿０-９0-9，。！？、]/g, ' ').trim(); if (!clean) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(clean); u.lang = 'zh-TW'; u.rate = 0.85; u.pitch = 1.1;
+  if (ttsVoice) u.voice = ttsVoice; speechSynthesis.speak(u);
+}
+function setSound(on) { soundOn = on; if (!on && 'speechSynthesis' in window) speechSynthesis.cancel(); $('#floatSound').textContent = on ? '🔊' : '🔇'; }
+// 唸完語音（且至少 minMs）後才執行 onDone；無語音時以時間替代。確保只觸發一次。
+function speakThen(text, onDone, minMs) {
+  minMs = minMs || 900;
+  let ended = false, waited = false, fired = false;
+  const tryFinish = () => { if (ended && waited && !fired) { fired = true; onDone(); } };
+  setTimeout(() => { waited = true; tryFinish(); }, minMs);
+  const clean = (soundOn && 'speechSynthesis' in window) ? text.replace(/[^一-鿿０-９0-9，。！？、]/g, ' ').trim() : '';
+  if (clean) {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(clean);
+    u.lang = 'zh-TW'; u.rate = 0.85; u.pitch = 1.1; if (ttsVoice) u.voice = ttsVoice;
+    u.onend = () => { ended = true; tryFinish(); };
+    u.onerror = () => { ended = true; tryFinish(); };
+    speechSynthesis.speak(u);
+    // 安全網：少數瀏覽器 onend 不觸發，依字數估時間（略寬於真實語速以免截斷）後強制繼續
+    setTimeout(() => { ended = true; tryFinish(); }, Math.min(7000, clean.length * 350 + 1200));
+  } else { ended = true; tryFinish(); }
+}
+
+/* ---------- 錢幣視覺 ---------- */
+function moneyHTML(value, size = 60) {
+  if (NOTE_VALUES.includes(value)) { const w = size * 1.5, h = size * 0.95;
+    return `<span class="note n${value}" style="width:${w}px;height:${h}px;font-size:${size*0.42}px"><span class="v">${value}</span><span class="u">元</span></span>`; }
+  return `<span class="coin c${value}" style="width:${size}px;height:${size}px;font-size:${size*0.42}px"><span class="v">${value}</span><span class="u">元</span></span>`;
+}
+function pileHTML(counts, size = 56) { let html = '';
+  ALL_VALUES.forEach(v => { for (let i = 0; i < (counts[v] || 0); i++) html += moneyHTML(v, size); }); return `<div class="money-row">${html}</div>`; }
+function pileTotal(counts) { return ALL_VALUES.reduce((s, v) => s + v * (counts[v] || 0), 0); }
+function itemCount(c) { return ALL_VALUES.reduce((s, v) => s + (c[v] || 0), 0); }
+
+/* ---------- 星星紀錄 ---------- */
+const bestStars = { recognize: 0, exchange: 0, count: 0, enough: 0 };
+function loadStars() { try { Object.assign(bestStars, JSON.parse(localStorage.getItem('coinStars') || '{}')); } catch (e) {} }
+function saveStars() { try { localStorage.setItem('coinStars', JSON.stringify(bestStars)); } catch (e) {} }
+function renderMenuStars() { for (const k in bestStars) $('#star-' + k).textContent = bestStars[k] > 0 ? '⭐'.repeat(bestStars[k]) : ''; }
+
+/* ---------- 題目產生器 ---------- */
+function makeRecognize() {
+  const value = pick(ALL_VALUES);
+  const opts = shuffle([value, ...shuffle(ALL_VALUES.filter(v => v !== value)).slice(0, 3)]);
+  const prompt = '這是多少錢呢？';
+  return { prompt, render(host, onAnswer) {
+    host.innerHTML = `
+      <div class="qrow"><div class="question">${zh(prompt)}</div></div>
+      ${moneyHTML(value, 96)}
+      <div class="options" id="opts"></div>
+      <div class="feedback" id="fb"></div>
+      <div class="action-row"><button class="btn btn-gray" id="skip">${zh('先跳過')} ⏭️</button></div>`;
+    let firstTry = true; const optsEl = host.querySelector('#opts');
+    opts.forEach(o => {
+      const b = document.createElement('button'); b.className = 'opt'; b.innerHTML = `${o} ${zh('元')}`; b.dataset.val = o;
+      b.onclick = () => { play('tap');
+        if (o === value) { disableAll(optsEl); cheer(host.querySelector('#fb'), () => onAnswer(true, firstTry)); }
+        else { firstTry = false; wrongOn(host.querySelector('#fb'), b); } };
+      optsEl.appendChild(b);
+    });
+    host.querySelector('#skip').onclick = () => { play('tap'); onAnswer(false, false); };
+  }};
+}
+function makeExchange() {
+  const pairs = [[10,5],[10,1],[5,1],[50,10],[100,50],[100,10],[50,5]];
+  let big, small, bigCount, answer;
+  do { [big, small] = pick(pairs); bigCount = randInt(1, 3); answer = big * bigCount / small; }
+  while (answer < 1 || answer > 20 || !Number.isInteger(answer) || big * bigCount > 100);
+  const prompt = `${bigCount} 個 ${big} 元，可以換成幾個 ${small} 元？`;
+  const counts = {}; counts[big] = bigCount;
+  return { prompt, render(host, onAnswer) {
+    let current = 0, firstTry = true;
+    host.innerHTML = `
+      <div class="qrow"><div class="question"><span class="hl">${bigCount}</span> ${zh('個')} ${big} ${zh('元')}，<br>${zh('可以換成幾個')} <span class="hl">${small}</span> ${zh('元')}？</div></div>
+      ${pileHTML(counts, 56)}
+      <div style="font-size:30px;margin:4px">⬇️</div>
+      <div id="smallPile" class="money-row" style="min-height:40px"></div>
+      <div class="stepper"><button class="minus" id="minus">−</button><div class="val" id="val">0</div><button class="plus" id="plus">＋</button></div>
+      <div class="feedback" id="fb"></div>
+      <div class="action-row"><button class="btn btn-green" id="check">${zh('看看對不對')} ✓</button><button class="btn btn-gray" id="skip">${zh('先跳過')} ⏭️</button></div>`;
+    const valEl = host.querySelector('#val'), pileEl = host.querySelector('#smallPile');
+    const redraw = () => { valEl.textContent = current; pileEl.innerHTML = current ? Array.from({length: current}, () => moneyHTML(small, 44)).join('') : ''; };
+    host.querySelector('#plus').onclick = () => { if (current < 30) { current++; play('tap'); redraw(); } };
+    host.querySelector('#minus').onclick = () => { if (current > 0) { current--; play('tap'); redraw(); } };
+    host.querySelector('#check').onclick = () => { const fb = host.querySelector('#fb');
+      if (current === answer) { cheer(fb, () => onAnswer(true, firstTry)); }
+      else { firstTry = false; wrongCard(fb, current * small < big * bigCount ? '還不夠喔，再多幾個試試' : '太多了，拿掉一些看看'); } };
+    host.querySelector('#skip').onclick = () => { play('tap'); onAnswer(false, false); };
+    redraw();
+  }};
+}
+function makeCount() {
+  let counts, total;
+  do { counts = { 1: randInt(0,4), 5: randInt(0,3), 10: randInt(1,5), 50: randInt(0,1) }; total = pileTotal(counts); }
+  while (total < 10 || total > 99 || itemCount(counts) < 3 || itemCount(counts) > 9);
+  const prompt = '一共有多少錢呢？';
+  return { prompt, render(host, onAnswer) {
+    let entered = '', firstTry = true;
+    host.innerHTML = `
+      <div class="qrow"><div class="question">${zh(prompt)}</div></div>
+      ${pileHTML(counts, 56)}
+      <div class="answer-box" id="ans">＿</div>
+      <div class="keypad" id="keypad"></div>
+      <div class="feedback" id="fb"></div>
+      <div class="action-row"><button class="btn btn-green" id="check">${zh('看看對不對')} ✓</button><button class="btn btn-gray" id="skip">${zh('先跳過')} ⏭️</button></div>`;
+    const ansEl = host.querySelector('#ans'), kp = host.querySelector('#keypad');
+    const draw = () => ansEl.innerHTML = entered === '' ? '＿' : `${entered} ${zh('元')}`;
+    ['1','2','3','4','5','6','7','8','9','⌫','0','✕'].forEach(k => {
+      const b = document.createElement('button'); b.textContent = k;
+      b.onclick = () => { play('tap'); if (k === '⌫') entered = entered.slice(0, -1); else if (k === '✕') entered = ''; else if (entered.length < 3) entered += k; draw(); };
+      kp.appendChild(b);
+    });
+    host.querySelector('#check').onclick = () => { const fb = host.querySelector('#fb');
+      if (entered === '') { fb.className = 'feedback try'; fb.innerHTML = zh('先按數字鍵填答案喔') + ' 🙂'; return; }
+      if (parseInt(entered, 10) === total) { cheer(fb, () => onAnswer(true, firstTry)); }
+      else { firstTry = false; wrongCard(fb, '慢慢數，先數大的再數小的'); } };
+    host.querySelector('#skip').onclick = () => { play('tap'); onAnswer(false, false); };
+    draw();
+  }};
+}
+function makeEnough() {
+  let counts, total, price, enough;
+  do { counts = { 10: randInt(1,4), 5: randInt(0,3), 1: randInt(0,4), 50: randInt(0,1) };
+    total = pileTotal(counts); price = randInt(Math.max(5, total - 20), Math.min(99, total + 20)); enough = total >= price; }
+  while (total < 10 || total > 99 || price < 5 || Math.abs(total - price) > 25 || itemCount(counts) < 2);
+  const item = pick(SHOP);
+  const prompt = `想買一個 ${price} 元的${item.name}，身上的錢夠不夠？`;
+  return { prompt, render(host, onAnswer) {
+    let firstTry = true;
+    host.innerHTML = `
+      <div class="qrow"><div class="question">${zh('陀螺商店')} 🛒<br>${zh('身上的錢夠不夠買？')}</div></div>
+      <div class="shop-item">${item.isTop ? `<span class="top-spin">${item.svg(86)}</span>` : item.svg(86)}<div style="font-weight:800;font-size:18px">${zh(item.name)}</div><div class="price-tag">${price} ${zh('元')}</div></div>
+      ${pileHTML(counts, 52)}
+      <div class="hint" style="font-size:16px">👆 ${zh('這是你身上所有的錢')}</div>
+      <div class="yn"><button class="btn btn-green" id="yes">${zh('夠')} 👍</button><button class="btn btn-blue" id="no">${zh('不夠')} 🙅</button></div>
+      <div class="feedback" id="fb"></div>
+      <div class="action-row"><button class="btn btn-gray" id="skip">${zh('先跳過')} ⏭️</button></div>`;
+    const fb = host.querySelector('#fb');
+    const answer = saidEnough => { play('tap');
+      if (saidEnough === enough) {
+        fb.className = 'feedback good pop';
+        fb.innerHTML = `<span class="spin-fast">${topSVG(pick(TOPS),26)}</span> ` + zh(`答對了！你有 ${total} 元，${item.name}要 ${price} 元`) + ' 🎉';
+        play('correct');
+        host.querySelector('#yes').disabled = true; host.querySelector('#no').disabled = true;
+        speakThen(`答對了！${enough ? '錢夠買！' : '錢不夠喔！'}`, () => onAnswer(true, firstTry), 1200);
+      } else { firstTry = false; wrongCard(fb, `先數數看身上一共有多少錢，再和 ${price} 元比比看`); } };
+    host.querySelector('#yes').onclick = () => answer(true);
+    host.querySelector('#no').onclick = () => answer(false);
+    host.querySelector('#skip').onclick = () => { play('tap'); onAnswer(false, false); };
+  }};
+}
+
+/* ---------- 共用回饋 ---------- */
+const CHEERS = ['答對了！', '好棒！', '太厲害了！', '出擊成功！', '超強的！', '贏了！', '完全正確！'];
+const CHEER_EMOJI = ['🎉','⭐','💪','⚡','🔥','🏆','😺'];
+function cheer(fb, onDone) {
+  const i = randInt(0, CHEERS.length - 1);
+  fb.className = 'feedback good pop';
+  fb.innerHTML = `<span class="spin-fast">${topSVG(pick(TOPS), 26)}</span> ` + zh(CHEERS[i]) + ' ' + CHEER_EMOJI[i];
+  play('correct');
+  speakThen(CHEERS[i], onDone || (() => {}), 1000);
+}
+function wrongOn(fb, btn) {
+  fb.className = 'feedback try'; fb.innerHTML = zh('再試一次，你可以的！') + ' 💪'; play('wrong'); speak('再試一次，你可以的！');
+  if (btn) { btn.classList.add('shake'); setTimeout(() => btn.classList.remove('shake'), 400); }
+}
+function wrongCard(fb, hint) {
+  fb.className = 'feedback try'; fb.innerHTML = zh('再試一次，你可以的！') + ' 💪'; play('wrong'); speak('再試一次，你可以的！');
+  const card = $('#card'); card.classList.add('shake'); setTimeout(() => card.classList.remove('shake'), 400);
+  let h = fb.nextElementSibling; if (!h || !h.classList.contains('hint')) { h = document.createElement('div'); h.className = 'hint'; fb.after(h); }
+  h.innerHTML = '💡 ' + zh(hint);
+}
+function disableAll(c) { c.querySelectorAll('button').forEach(b => b.disabled = true); }
+
+/* ---------- 流程控制 ---------- */
+const GENERATORS = { recognize: makeRecognize, exchange: makeExchange, count: makeCount, enough: makeEnough };
+let state = null;
+function startStage(stage) { state = { stage, index: 0, stars: 0, sparkles: 0 }; show('game'); nextQuestion(); }
+function nextQuestion() {
+  if (state.index >= QUESTIONS_PER_ROUND) return finishRound();
+  $('#progLabel').textContent = `${state.index + 1} / ${QUESTIONS_PER_ROUND}`;
+  $('#progFill').style.width = (state.index / QUESTIONS_PER_ROUND * 100) + '%';
+  GENERATORS[state.stage]().render($('#card'), (correct, sparkle) => {
+    state.index++; state.stars++; if (correct && sparkle) state.sparkles++;
+    $('#progFill').style.width = (state.index / QUESTIONS_PER_ROUND * 100) + '%'; nextQuestion();
+  });
+}
+function finishRound() {
+  show('result');
+  const stars = state.stars;
+  bestStars[state.stage] = Math.max(bestStars[state.stage], stars); saveStars(); renderMenuStars();
+  $('#resTop').innerHTML = `<span class="spin-slow">${topSVG(pick(TOPS), 80)}</span>`;
+  $('#resStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(QUESTIONS_PER_ROUND - stars);
+  $('#resEmoji').textContent = pick(['⚡','🏆','🔥','🎊','🌟']);
+  const msg = `你完成了 ${stars} 題！好棒！`;
+  $('#resMsg').innerHTML = zh(msg);
+  let sub;
+  if (state.sparkles === QUESTIONS_PER_ROUND) sub = '全部一次就答對，超強的！⚡';
+  else if (state.sparkles > 0) sub = `其中 ${state.sparkles} 題一次就答對 ✨ 繼續加油！`;
+  else sub = '有努力完成最棒了，再玩一次會更熟喔！';
+  $('#resSub').innerHTML = zh(sub);
+  play('complete'); speak(msg);
+  $('#againBtn').onclick = () => { play('tap'); startStage(state.stage); };
+}
+function show(which) {
+  ['menu','game','result'].forEach(id => $('#' + id).classList.toggle('hidden', id !== which));
+  $('#floatHome').classList.toggle('invisible', which === 'menu');
+  $('#backMath').classList.toggle('invisible', which !== 'menu');
+}
+
+/* ---------- 初始化 ---------- */
+function fillStatic() {
+  $('#heroTop').innerHTML = topSVG(TOPS[1], 84);
+  $('#title').innerHTML = '⚡ ' + zh('陀螺戰士 錢幣特訓');
+  $('#subtitle').innerHTML = zh('慢慢來，你可以的！每一關都能一直玩') + ' ✨';
+  document.querySelectorAll('[data-zh]').forEach(el => el.innerHTML = zh(el.dataset.zh));
+  $('#againBtn').innerHTML = zh('再玩一次') + ' 🔁';
+  $('#homeBtn').innerHTML = zh('回首頁') + ' 🏠';
+}
+document.querySelectorAll('.stage-card').forEach(c => c.onclick = () => { ac(); play('tap'); startStage(c.dataset.stage); });
+$('#floatHome').onclick = () => { play('tap'); show('menu'); };
+$('#homeBtn').onclick = () => { play('tap'); show('menu'); };
+$('#floatSound').onclick = () => { ac(); setSound(!soundOn); if (soundOn) speak('打開聲音'); };
+
+fillStatic(); loadStars(); renderMenuStars(); show('menu');
+</script>
+</body>
+</html>
